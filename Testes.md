@@ -260,6 +260,79 @@ func TestCreateTodoIntegration(t *testing.T) {
 
 Nesse teste de integração, testamos a criação de um Todo, simulando uma requisição completa à API.
 
+### Executando os Testes
+
+Para executar os testes, basta rodar o comando:
+
+```bash
+$ go test -v go-todo-api/...
+```	
+A saída do comando mostrará os resultados dos testes, indicando se todos passaram ou se houve algum erro.
+
+**Exemplo de saída:**
+```bash
+?   	go-todo-api-03	[no test files]
+?   	go-todo-api-03/database	[no test files]
+?   	go-todo-api-03/models	[no test files]
+=== RUN   TestGetAllTodosHandler_Success
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /todos                    --> go-todo-api-03/controllers.(*TodoController).GetAllTodos-fm (3 handlers)
+[GIN] 2024/09/23 - 08:11:17 | 200 |     147.947µs |                 | GET      "/todos"
+--- PASS: TestGetAllTodosHandler_Success (0.00s)
+PASS
+ok  	go-todo-api-03/controllers	0.007s
+?   	go-todo-api-03/routes	[no test files]
+=== RUN   TestCreateTodo_Success
+--- PASS: TestCreateTodo_Success (0.01s)
+=== RUN   TestFindAllTodos_Success
+--- PASS: TestFindAllTodos_Success (0.00s)
+PASS
+ok  	go-todo-api-03/repositories	0.012s
+=== RUN   TestGetAllTodos_Success
+--- PASS: TestGetAllTodos_Success (0.00s)
+=== RUN   TestGetTodoByID_NotFound
+--- PASS: TestGetTodoByID_NotFound (0.00s)
+PASS
+ok  	go-todo-api-03/services	(cached)
+=== RUN   TestCreateTodoIntegration
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /todos                    --> go-todo-api-03/controllers.(*TodoController).GetAllTodos-fm (3 handlers)
+[GIN-debug] POST   /todos                    --> go-todo-api-03/controllers.(*TodoController).CreateTodo-fm (3 handlers)
+[GIN-debug] GET    /todos/:id                --> go-todo-api-03/controllers.(*TodoController).GetTodoByID-fm (3 handlers)
+[GIN-debug] PUT    /todos/:id                --> go-todo-api-03/controllers.(*TodoController).UpdateTodo-fm (3 handlers)
+[GIN-debug] DELETE /todos/:id                --> go-todo-api-03/controllers.(*TodoController).DeleteTodo-fm (3 handlers)
+[GIN] 2024/09/23 - 08:11:17 | 201 |     1.72825ms |                 | POST     "/todos"
+--- PASS: TestCreateTodoIntegration (0.00s)
+PASS
+ok  	go-todo-api-03/tests	0.008s
+```
+
+Você também pode rodar testes de uma camada específica, como os testes de serviço:
+
+```bash
+$ go test -v go-todo-api/services
+```
+
+Isso executará apenas os testes da camada de serviço.
+
+**Exemplo de saída:**
+```bash
+=== RUN   TestGetAllTodos_Success
+--- PASS: TestGetAllTodos_Success (0.00s)
+PASS
+ok      go-todo-api-03/services 0.004s
+```
+
 ### Conclusão
 
 Com esses exemplos, você tem uma base sólida de como implementar testes unitários e de integração para uma aplicação REST em Go, utilizando os conceitos de TDD. Cada camada da aplicação foi testada de maneira isolada e integrada, garantindo que as funcionalidades estejam bem validadas. Isso ajuda a aumentar a confiabilidade do código e a qualidade do software.
