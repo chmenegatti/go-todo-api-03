@@ -55,8 +55,7 @@ package services
 
 import (
 	"errors"
-	"go-todo-api/models"
-	"go-todo-api/repositories"
+	"go-todo-api-03/models"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -78,18 +77,18 @@ func (m *MockTodoRepository) FindByID(id uint) (models.Todo, error) {
 	return args.Get(0).(models.Todo), args.Error(1)
 }
 
-func (m *MockTodoRepository) Create(todo models.Todo) error {
+func (m *MockTodoRepository) Create(todo models.Todo) (models.Todo, error) {
 	args := m.Called(todo)
-	return args.Error(0)
+	return args.Get(0).(models.Todo), args.Error(1)
 }
 
-func (m *MockTodoRepository) Update(todo models.Todo) error {
+func (m *MockTodoRepository) Update(todo models.Todo) (models.Todo, error) {
 	args := m.Called(todo)
-	return args.Error(0)
+	return args.Get(0).(models.Todo), args.Error(1)
 }
 
-func (m *MockTodoRepository) Delete(id uint) error {
-	args := m.Called(id)
+func (m *MockTodoRepository) Delete(todo models.Todo) error {
+	args := m.Called(todo)
 	return args.Error(0)
 }
 
@@ -99,8 +98,8 @@ func TestGetAllTodos_Success(t *testing.T) {
 
 	// Simulando retorno do mock
 	mockRepo.On("FindAll").Return([]models.Todo{
-		{ID: 1, Title: "Task 1"},
-		{ID: 2, Title: "Task 2"},
+		{Title: "Task 1"},
+		{Title: "Task 2"},
 	}, nil)
 
 	todos, err := service.GetAllTodos()
@@ -125,6 +124,7 @@ func TestGetTodoByID_NotFound(t *testing.T) {
 	assert.Empty(t, todo)
 	mockRepo.AssertExpectations(t)
 }
+
 ```
 
 Esse exemplo de teste unitário testa a camada de serviço com um mock do repositório usando o `testify`. As funções `GetAllTodos` e `GetTodoByID` são testadas para garantir que o serviço retorne corretamente os dados.
@@ -139,8 +139,8 @@ Agora, vamos criar testes para o repositório, onde faremos interações reais c
 package repositories
 
 import (
-	"go-todo-api/database"
-	"go-todo-api/models"
+	"go-todo-api-03/database"
+	"go-todo-api-03/models"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -151,7 +151,7 @@ func TestCreateTodo_Success(t *testing.T) {
 	repo := NewTodoRepository(database.DB)
 
 	todo := models.Todo{Title: "Test Todo"}
-	err := repo.Create(todo)
+	_, err := repo.Create(todo)
 
 	assert.NoError(t, err)
 }
@@ -165,6 +165,7 @@ func TestFindAllTodos_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, todos)
 }
+
 ```
 
 Aqui, testamos a camada de repositório interagindo diretamente com o banco de dados SQLite. O objetivo é garantir que os dados possam ser inseridos e recuperados corretamente.
@@ -179,8 +180,7 @@ Agora, vamos testar as rotas HTTP com o pacote `httptest`.
 package controllers
 
 import (
-	"go-todo-api/models"
-	"go-todo-api/services"
+	"go-todo-api-03/models"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -199,13 +199,33 @@ func (m *MockTodoService) GetAllTodos() ([]models.Todo, error) {
 	return args.Get(0).([]models.Todo), args.Error(1)
 }
 
+func (m *MockTodoService) CreateTodo(todo models.Todo) (models.Todo, error) {
+	args := m.Called(todo)
+	return args.Get(0).(models.Todo), args.Error(1)
+}
+
+func (m *MockTodoService) DeleteTodo(id uint) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+func (m *MockTodoService) GetTodoByID(id uint) (models.Todo, error) {
+	args := m.Called(id)
+	return args.Get(0).(models.Todo), args.Error(1)
+}
+
+func (m *MockTodoService) UpdateTodo(todo models.Todo) (models.Todo, error) {
+	args := m.Called(todo)
+	return args.Get(0).(models.Todo), args.Error(1)
+}
+
 func TestGetAllTodosHandler_Success(t *testing.T) {
 	mockService := new(MockTodoService)
 	controller := NewTodoController(mockService)
 
 	// Simulando retorno do mock
 	mockService.On("GetAllTodos").Return([]models.Todo{
-		{ID: 1, Title: "Task 1"},
+		{Title: "Task 1"},
 	}, nil)
 
 	// Simulando a chamada HTTP
@@ -218,6 +238,7 @@ func TestGetAllTodosHandler_Success(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	mockService.AssertExpectations(t)
 }
+
 ```
 
 Aqui usamos o `httptest` para simular chamadas HTTP e verificar se a rota está retornando o que esperamos.
@@ -232,9 +253,8 @@ Agora, vamos criar um teste de integração para verificar o fluxo completo da a
 package tests
 
 import (
-	"go-todo-api/database"
-	"go-todo-api/models"
-	"go-todo-api/routes"
+	"go-todo-api-03/database"
+	"go-todo-api-03/routes"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -256,6 +276,7 @@ func TestCreateTodoIntegration(t *testing.T) {
 
 	assert.Equal(t, http.StatusCreated, w.Code)
 }
+
 ```
 
 Nesse teste de integração, testamos a criação de um Todo, simulando uma requisição completa à API.
